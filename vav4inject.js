@@ -1120,6 +1120,14 @@ flyvert = fly.addoption("Vertical", Number, 0.7);       // Vertical speed
 					spectator.toggle();
 				}
 			});
+                        const freelook = new Module("Freelook", function(callback) {
+    if (callback) {
+        if (player && player.camera) {
+            player.camera.setFreelook(true); // Enable freelook
+        }
+        freelook.toggle(); // Immediately disable the module again (like your SurvivalMode)
+    }
+});
 
 			globalThis.${storeName}.modules = modules;
 			globalThis.${storeName}.profile = "default";
