@@ -1108,6 +1108,18 @@ flyvert = fly.addoption("Vertical", Number, 0.7);       // Vertical speed
 					survival.toggle();
 				}
 			});
+                        const creative = new Module("CreativeMode", function(callback) {
+				if (callback) {
+					if (player) player.setGamemode(GameMode.fromId("creative"));
+					creative.toggle();
+				}
+			});
+                        const spectator = new Module("SpectatorMode", function(callback) {
+				if (callback) {
+					if (player) player.setGamemode(GameMode.fromId("Spectator"));
+					spectator.toggle();
+				}
+			});
 
 			globalThis.${storeName}.modules = modules;
 			globalThis.${storeName}.profile = "default";
