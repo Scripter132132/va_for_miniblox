@@ -1116,7 +1116,7 @@ flyvert = fly.addoption("Vertical", Number, 0.7);       // Vertical speed
 			});
                         const spectator = new Module("SpectatorMode", function(callback) {
 				if (callback) {
-					if (player) player.setGamemode(GameMode.fromId("Spectator"));
+					if (player) player.setGamemode(GameMode.fromId("spectator"));
 					spectator.toggle();
 				}
 			});
