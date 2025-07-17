@@ -757,31 +757,51 @@ h.addVelocity(-Math.sin(this.yaw) * g * .5, .1, -Math.cos(this.yaw) * g * .5);
 				}
 				return new Vector3$1(0, 0, 0);
 			}
+// Fly Module
+let flyvalue, flyvert, flybypass;
 
-			// Fly
-			let flyvalue, flyvert, flybypass;
-			const fly = new Module("Fly", function(callback) {
-				if (callback) {
-					let ticks = 0;
-					tickLoop["Fly"] = function() {
-						ticks++;
-						const dir = getMoveDirection(flyvalue[1]);
-						player.motion.x = dir.x;
-						player.motion.z = dir.z;
-						player.motion.y = keyPressedDump("space") ? flyvert[1] : (keyPressedDump("shift") ? -flyvert[1] : 0);
-					};
-				}
-				else {
-					delete tickLoop["Fly"];
-					if (player) {
-						player.motion.x = Math.max(Math.min(player.motion.x, 0.3), -0.3);
-						player.motion.z = Math.max(Math.min(player.motion.z, 0.3), -0.3);
-					}
-				}
-			});
-			flybypass = fly.addoption("Bypass", Boolean, true);
-			flyvalue = fly.addoption("Speed", Number, 2);
-			flyvert = fly.addoption("Vertical", Number, 0.7);
+const fly = new Module("Fly", function(enabled) {
+    if (enabled) {
+        let ticks = 0;
+        tickLoop["Fly"] = function() {
+            ticks++;
+
+            const dir = getMoveDirection(flyvalue[1]); // Movement direction based on key input
+
+            // Apply horizontal movement
+            player.motion.x = dir.x;
+            player.motion.z = dir.z;
+
+            // Apply vertical motion (Space = up, Shift = down)
+            if (keyPressedDump("space")) {
+                player.motion.y = flyvert[1];
+            } else if (keyPressedDump("shift")) {
+                player.motion.y = -flyvert[1];
+            } else {
+                player.motion.y = 0;
+            }
+
+            // Optional bypass logic
+            if (flybypass[1]) {
+                // Insert any bypass-related logic here, like spoofing fall distance or packet manipulation
+                player.fallDistance = 0; // Example basic bypass
+            }
+        };
+    } else {
+        delete tickLoop["Fly"];
+        if (player) {
+            // Reset motion to avoid infinite drift
+            player.motion.x = Math.max(Math.min(player.motion.x, 0.3), -0.3);
+            player.motion.z = Math.max(Math.min(player.motion.z, 0.3), -0.3);
+        }
+    }
+});
+
+// Add options to the fly module
+flybypass = fly.addoption("Bypass", Boolean, true);     // Toggle to enable bypass logic
+flyvalue = fly.addoption("Speed", Number, 2);           // Horizontal speed
+flyvert = fly.addoption("Vertical", Number, 0.7);       // Vertical speed
+
 
 			// InfiniteFly
 			let infiniteFlyVert;
