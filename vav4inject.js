@@ -802,6 +802,42 @@ flybypass = fly.addoption("Bypass", Boolean, true);     // Toggle to enable bypa
 flyvalue = fly.addoption("Speed", Number, 2);           // Horizontal speed
 flyvert = fly.addoption("Vertical", Number, 0.7);       // Vertical speed
 
+                        // Freecam Module
+let freecamSpeed = 1;
+
+const freecam = new Module("Freecam", function(enabled) {
+    if (enabled) {
+        let cam = camera; // Reference to the game's camera
+        let pitch = 0;
+        let yaw = 0;
+
+        tickLoop["Freecam"] = function() {
+            // Optional: Hide player or freeze position
+            player.motion.x = 0;
+            player.motion.y = 0;
+            player.motion.z = 0;
+
+            // Look direction changes
+            pitch -= (keyPressedDump("up") ? 2 : 0) - (keyPressedDump("down") ? 2 : 0);
+            yaw -= (keyPressedDump("left") ? 2 : 0) - (keyPressedDump("right") ? 2 : 0);
+
+            // Movement direction
+            const dir = getMoveDirection(freecamSpeed, yaw);
+            if (keyPressedDump("w")) cam.position.z += dir.z;
+            if (keyPressedDump("s")) cam.position.z -= dir.z;
+            if (keyPressedDump("a")) cam.position.x -= dir.x;
+            if (keyPressedDump("d")) cam.position.x += dir.x;
+            if (keyPressedDump("space")) cam.position.y += freecamSpeed;
+            if (keyPressedDump("shift")) cam.position.y -= freecamSpeed;
+
+            cam.rotation.x = pitch;
+            cam.rotation.y = yaw;
+        };
+    } else {
+        delete tickLoop["Freecam"];
+    }
+});
+
 
 			// InfiniteFly
 			let infiniteFlyVert;
