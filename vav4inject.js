@@ -756,89 +756,67 @@ h.addVelocity(-Math.sin(this.yaw) * g * .5, .1, -Math.cos(this.yaw) * g * .5);
 					return new Vector3$1(moveStrafe * rt - moveForward * nt, 0, moveForward * rt + moveStrafe * nt);
 				}
 				return new Vector3$1(0, 0, 0);
-			}
-// Fly Module
-let flyvalue, flyvert, flybypass;
+// ...everything above this stays the same!
 
-const fly = new Module("Fly", function(enabled) {
-    if (enabled) {
+// Fly (ANTICHEAT BYPASS PATCH)
+let flyvalue, flyvert, flybypass;
+const fly = new Module("Fly", function(callback) {
+    if (callback) {
         let ticks = 0;
         tickLoop["Fly"] = function() {
             ticks++;
-
-            const dir = getMoveDirection(flyvalue[1]); // Movement direction based on key input
-
-            // Apply horizontal movement
-            player.motion.x = dir.x;
-            player.motion.z = dir.z;
-
-            // Apply vertical motion (Space = up, Shift = down)
-            if (keyPressedDump("space")) {
-                player.motion.y = flyvert[1];
-            } else if (keyPressedDump("shift")) {
-                player.motion.y = -flyvert[1];
-            } else {
-                player.motion.y = 0;
-            }
-
-            // Optional bypass logic
             if (flybypass[1]) {
-                // Insert any bypass-related logic here, like spoofing fall distance or packet manipulation
-                player.fallDistance = 0; // Example basic bypass
+                // Anticheat bypass logic: simulate short hops instead of constant flight
+                if (keyPressedDump("space")) {
+                    // Hop upwards every few ticks
+                    if (ticks % 4 === 0) {
+                        player.motion.y = flyvert[1];
+                    } else {
+                        player.motion.y = 0;
+                    }
+                } else if (keyPressedDump("shift")) {
+                    // Go downwards in hops
+                    if (ticks % 4 === 0) {
+                        player.motion.y = -flyvert[1];
+                    } else {
+                        player.motion.y = 0;
+                    }
+                } else {
+                    // Stay in air (no vertical movement)
+                    player.motion.y = 0;
+                }
+                // Only set horizontal motion if moving (less likely to get flagged)
+                if (player.moveForwardDump !== 0 || player.moveStrafeDump !== 0) {
+                    const dir = getMoveDirection(flyvalue[1] + (Math.random() - 0.5) * 0.02); // small randomization
+                    player.motion.x = dir.x;
+                    player.motion.z = dir.z;
+                } else {
+                    player.motion.x = 0;
+                    player.motion.z = 0;
+                }
+            } else {
+                // Old fly (less safe)
+                const dir = getMoveDirection(flyvalue[1]);
+                player.motion.x = dir.x;
+                player.motion.z = dir.z;
+                player.motion.y = keyPressedDump("space") ? flyvert[1] : (keyPressedDump("shift") ? -flyvert[1] : 0);
             }
         };
-    } else {
+    }
+    else {
         delete tickLoop["Fly"];
         if (player) {
-            // Reset motion to avoid infinite drift
             player.motion.x = Math.max(Math.min(player.motion.x, 0.3), -0.3);
             player.motion.z = Math.max(Math.min(player.motion.z, 0.3), -0.3);
         }
     }
 });
+flybypass = fly.addoption("Bypass", Boolean, true);
+flyvalue = fly.addoption("Speed", Number, 2);
+flyvert = fly.addoption("Vertical", Number, 0.7);
 
-// Add options to the fly module
-flybypass = fly.addoption("Bypass", Boolean, true);     // Toggle to enable bypass logic
-flyvalue = fly.addoption("Speed", Number, 2);           // Horizontal speed
-flyvert = fly.addoption("Vertical", Number, 0.7);       // Vertical speed
-
-                        // Freecam Module
-let freecamSpeed = 1;
-
-const freecam = new Module("Freecam", function(enabled) {
-    if (enabled) {
-        let cam = camera; // Reference to the game's camera
-        let pitch = 0;
-        let yaw = 0;
-
-        tickLoop["Freecam"] = function() {
-            // Optional: Hide player or freeze position
-            player.motion.x = 0;
-            player.motion.y = 0;
-            player.motion.z = 0;
-
-            // Look direction changes
-            pitch -= (keyPressedDump("up") ? 2 : 0) - (keyPressedDump("down") ? 2 : 0);
-            yaw -= (keyPressedDump("left") ? 2 : 0) - (keyPressedDump("right") ? 2 : 0);
-
-            // Movement direction
-            const dir = getMoveDirection(freecamSpeed, yaw);
-            if (keyPressedDump("w")) cam.position.z += dir.z;
-            if (keyPressedDump("s")) cam.position.z -= dir.z;
-            if (keyPressedDump("a")) cam.position.x -= dir.x;
-            if (keyPressedDump("d")) cam.position.x += dir.x;
-            if (keyPressedDump("space")) cam.position.y += freecamSpeed;
-            if (keyPressedDump("shift")) cam.position.y -= freecamSpeed;
-
-            cam.rotation.x = pitch;
-            cam.rotation.y = yaw;
-        };
-    } else {
-        delete tickLoop["Freecam"];
-    }
-});
-
-
+// ...everything below this stays the same!
+                      
 			// InfiniteFly
 			let infiniteFlyVert;
 			const infiniteFly = new Module("InfiniteFly", function(callback) {
