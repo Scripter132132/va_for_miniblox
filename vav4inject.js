@@ -756,7 +756,9 @@ h.addVelocity(-Math.sin(this.yaw) * g * .5, .1, -Math.cos(this.yaw) * g * .5);
 					return new Vector3$1(moveStrafe * rt - moveForward * nt, 0, moveForward * rt + moveStrafe * nt);
 				}
 				return new Vector3$1(0, 0, 0);
-// === Fly (Standalone + Bypass) ===
+			}
+
+			// === Fly (Standalone + Bypass) ===
 
 // Settings
 let flyEnabled = false;
@@ -806,9 +808,8 @@ setInterval(() => {
     if (flyEnabled) applyFly();
 }, 20);
 
-                      
 			// InfiniteFly
-			let infiniteFlyVert;
+			let infiniteFlyVert;;
 			const infiniteFly = new Module("InfiniteFly", function(callback) {
 				if (callback) {
 					let ticks = 0;
@@ -1112,18 +1113,7 @@ setInterval(() => {
 					survival.toggle();
 				}
 			});
-                        const creative = new Module("CreativeMode", function(callback) {
-				if (callback) {
-					if (player) player.setGamemode(GameMode.fromId("creative"));
-					creative.toggle();
-				}
-			});
-                        const spectator = new Module("SpectatorMode", function(callback) {
-				if (callback) {
-					if (player) player.setGamemode(GameMode.fromId("spectator"));
-					spectator.toggle();
-				}
-			}); 
+
 			globalThis.${storeName}.modules = modules;
 			globalThis.${storeName}.profile = "default";
 		})();
