@@ -758,58 +758,33 @@ h.addVelocity(-Math.sin(this.yaw) * g * .5, .1, -Math.cos(this.yaw) * g * .5);
 				return new Vector3$1(0, 0, 0);
 			}
 
-			// === Fly (Standalone + Bypass) ===
-
-// Settings
-let flyEnabled = false;
-let flySpeed = 2;       // Horizontal
-let flyVertical = 0.7;  // Vertical
-let flyBypass = true;   // Smooth increments
-
-// Key states
-const keys = {};
-document.addEventListener("keydown", e => {
-    keys[e.key.toLowerCase()] = true;
-    if (e.key.toLowerCase() === "f") {
-        flyEnabled = !flyEnabled;
-        console.log(`Fly: ${flyEnabled ? "ON" : "OFF"}`);
-    }
-});
-document.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
-
-function getDir(speed) {
-    let x = 0, z = 0;
-    if (keys["w"]) z -= speed;
-    if (keys["s"]) z += speed;
-    if (keys["a"]) x -= speed;
-    if (keys["d"]) x += speed;
-    return {x, z};
-}
-
-function applyFly() {
-    if (!window.player) return;
-
-    const dir = getDir(flySpeed);
-
-    if (flyBypass) {
-        // Smaller increments to trick anti-cheat
-        player.motion.x = dir.x * 0.1;
-        player.motion.z = dir.z * 0.1;
-        player.motion.y = (keys[" "] ? flyVertical : (keys["shift"] ? -flyVertical : 0)) * 0.1;
-    } else {
-        player.motion.x = dir.x;
-        player.motion.z = dir.z;
-        player.motion.y = keys[" "] ? flyVertical : (keys["shift"] ? -flyVertical : 0);
-    }
-}
-
-// Main loop
-setInterval(() => {
-    if (flyEnabled) applyFly();
-}, 20);
+			// Fly
+			let flyvalue, flyvert, flybypass;
+			const fly = new Module("Fly", function(callback) {
+				if (callback) {
+					let ticks = 0;
+					tickLoop["Fly"] = function() {
+						ticks++;
+						const dir = getMoveDirection(flyvalue[1]);
+						player.motion.x = dir.x;
+						player.motion.z = dir.z;
+						player.motion.y = keyPressedDump("space") ? flyvert[1] : (keyPressedDump("shift") ? -flyvert[1] : 0);
+					};
+				}
+				else {
+					delete tickLoop["Fly"];
+					if (player) {
+						player.motion.x = Math.max(Math.min(player.motion.x, 0.3), -0.3);
+						player.motion.z = Math.max(Math.min(player.motion.z, 0.3), -0.3);
+					}
+				}
+			});
+			flybypass = fly.addoption("Bypass", Boolean, true);
+			flyvalue = fly.addoption("Speed", Number, 2);
+			flyvert = fly.addoption("Vertical", Number, 0.7);
 
 			// InfiniteFly
-			let infiniteFlyVert;;
+			let infiniteFlyVert;
 			const infiniteFly = new Module("InfiniteFly", function(callback) {
 				if (callback) {
 					let ticks = 0;
@@ -1107,10 +1082,10 @@ setInterval(() => {
 			chatdisablermsg = chatdisabler.addoption("Message", String, "youtube.com/c/7GrandDadVape");
 			new Module("FilterBypass", function() {});
 
-			const survival = new Module("SurvivalMode", function(callback) {
+			const creative = new Module("CreativeMode", function(callback) {
 				if (callback) {
-					if (player) player.setGamemode(GameMode.fromId("survival"));
-					survival.toggle();
+					if (player) player.setGamemode(GameMode.fromId("creative"));
+					creative.toggle();
 				}
 			});
 
