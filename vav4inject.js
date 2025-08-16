@@ -538,7 +538,7 @@ h.addVelocity(-Math.sin(this.yaw) * g * .5, .1, -Math.cos(this.yaw) * g * .5);
 				for (const entity of entities) {
 						if (!entity instanceof EntityPlayer)
 							continue; 
-						if (entity.mode.isCreative() || entity.mode.isSpectator())
+						if (entity.mode.isCreative() || entity.mode.isCreative())
 							continue; 
 				}
 			})
@@ -1088,7 +1088,13 @@ h.addVelocity(-Math.sin(this.yaw) * g * .5, .1, -Math.cos(this.yaw) * g * .5);
 					creative.toggle();
 				}
 			});
-
+           
+            const spectator = new Module("SpectatorMode", function(callback) {
+				if (callback) {
+					if (player) player.setGamemode(GameMode.fromId("Spectator"));
+					spectator.toggle();
+				}
+			});
 			globalThis.${storeName}.modules = modules;
 			globalThis.${storeName}.profile = "default";
 		})();
