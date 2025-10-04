@@ -758,72 +758,29 @@ h.addVelocity(-Math.sin(this.yaw) * g * .5, .1, -Math.cos(this.yaw) * g * .5);
 				return new Vector3$1(0, 0, 0);
 			}
 
-			// =========================
-//  Fly Module (Full Script)
-// =========================
-
-// Options
-let flyvalue, flyvert, flybypass;
-
-// Module Definition
-const fly = new Module("Fly", function(callback) {
-    if (callback) {
-        let ticks = 0;
-        tickLoop["Fly"] = function() {
-            ticks++;
-            const dir = getMoveDirection(flyvalue[1]);
-
-            // Smooth motion for less detection
-            player.motion.x = dir.x * 0.98;
-            player.motion.z = dir.z * 0.98;
-            player.motion.y = keyPressedDump("space") 
-                ? flyvert[1] * 0.98 
-                : (keyPressedDump("shift") ? -flyvert[1] * 0.98 : 0);
-
-            // Adventure World bypass: throttle packets
-            if (config.antiCheatAdventure === false && ticks % 2 === 0) {
-                sendPositionPacket(player.pos);
-            }
-        };
-    } else {
-        // Disable fly
-        delete tickLoop["Fly"];
-        if (player) {
-            // Reset player speed caps
-            player.motion.x = Math.max(Math.min(player.motion.x, 0.3), -0.3);
-            player.motion.z = Math.max(Math.min(player.motion.z, 0.3), -0.3);
-        }
-    }
-});
-
-// Fly Options
-flybypass = fly.addoption("Bypass", Boolean, true);
-flyvalue  = fly.addoption("Speed", Number, 2);
-flyvert   = fly.addoption("Vertical", Number, 0.7);
-
-// ==============================
-//  Server-Side Validation Bypass
-// ==============================
-function validateMovement(player, newPos) {
-    // Adventure World bypass (testing only)
-    if (player.world.name === "Adventure" && config.antiCheatAdventure === false) {
-        return true;
-    }
-
-    // Normal validation
-    if (distance(player.lastPos, newPos) > MAX_SPEED) {
-        player.teleport(player.lastPos);
-        return false;
-    }
-    return true;
-}
-
-// ==============================
-//  Config
-// ==============================
-const config = {
-    antiCheatAdventure: false // set to true to re-enable checks
-};
+// Fly bypasser?! lol
+			let flyvalue, flyvert, flybypass;
+			const fly = new Module("Fly", function(callback) {
+				if (!callback) {
+					if (player) {
+						player.motion.x = Math.max(Math.min(player.motion.x, 0.3), -0.3);
+						player.motion.z = Math.max(Math.min(player.motion.z, 0.3), -0.3);
+					}
+					delete tickLoop["Fly"];
+					desync = false;
+					return;
+				}
+				desync = true;
+				tickLoop["Fly"] = function() {
+					const dir = getMoveDirection(flyvalue[1]);
+					player.motion.x = dir.x;
+					player.motion.z = dir.z;
+					player.motion.y = keyPressedDump("space") ? flyvert[1] : (keyPressedDump("shift") ? -flyvert[1] : 0);
+				};
+			});
+			flybypass = fly.addoption("Bypass", Boolean, true);
+			flyvalue = fly.addoption("Speed", Number, 0.18);
+			flyvert = fly.addoption("Vertical", Number, 0.3);
 
 
 			// InfiniteFly
